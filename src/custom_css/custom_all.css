@@ -1,0 +1,67 @@
+#header_menu a {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 5px;
+  color: #212529; /* same as text-dark */
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+#header_menu a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0%;
+  height: 3px;
+  background-color: #212529; /* dark border */
+  transition: width 0.3s ease;
+}
+
+#header_menu a:hover::after {
+  width: 100%;
+}
+
+/* Active menu styling */
+#header_menu a.active::after {
+  width: 100%;
+}
+
+#header_menu a:hover,
+#header_menu a.active {
+  color: #000; /* optional darker effect */
+}
+
+.marquee-container {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.marquee-track {
+  display: flex;
+  min-width: 200%; /* ensures track is at least twice full width */
+  animation: marquee 30s linear infinite;
+}
+
+.marquee-content {
+  display: flex;
+  gap: 2rem; /* like Bootstrap gap-4 */
+}
+
+.marquee-content .icon {
+  width: 40px;   /* icon size */
+  height: 40px;
+  object-fit: contain;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+
