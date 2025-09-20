@@ -1,3 +1,12 @@
+/* Medium (md ≥768px) and up */
+@media (min-width: 768px) {
+  .img-md-fixed {
+    height: 300px;
+    width: auto; /* maintain aspect ratio */
+  }
+}
+
+
 #header_menu a {
   position: relative;
   display: inline-block;
@@ -32,36 +41,63 @@
   color: #000; /* optional darker effect */
 }
 
-.marquee-container {
-  width: 100%;
-  overflow: hidden;
-  position: relative;
+.cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background-color: black;
+  vertical-align: middle;
 }
 
-.marquee-track {
-  display: flex;
-  min-width: 200%; /* ensures track is at least twice full width */
-  animation: marquee 30s linear infinite;
+.cursor.blink {
+  animation: blink 0.7s steps(1) infinite;
 }
 
-.marquee-content {
-  display: flex;
-  gap: 2rem; /* like Bootstrap gap-4 */
-}
-
-.marquee-content .icon {
-  width: 40px;   /* icon size */
-  height: 40px;
-  object-fit: contain;
-}
-
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
+@keyframes blink {
+  50% {
+    background-color: transparent;
   }
 }
+
+/* navbar-animation.css */
+.navbar-slide {
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: transform 0.6s ease, opacity 0.6s ease;
+}
+
+.navbar-slide.visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* home-section-animation.css */
+
+/* base */
+.slide-left, .slide-right {
+  opacity: 0;
+  transition: transform 0.9s ease, opacity 0.9s ease;
+}
+
+/* Left column slides right */
+.slide-right {
+  transform: translateX(-100px);
+}
+.slide-right.visible {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* Right column slides left */
+.slide-left {
+  transform: translateX(100px);
+}
+.slide-left.visible {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+
+
 
 
