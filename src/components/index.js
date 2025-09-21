@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import MainMenu from "./main_menu";
+import { Offcanvas } from "bootstrap";
 
 export default function MyPortfolio() {
   const [activeSection, setActiveSection] = useState("home");
@@ -7,10 +9,9 @@ export default function MyPortfolio() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // Trigger animation after the component mounts (first visible)
     const timer = setTimeout(() => {
       setVisible(true);
-    }, 100); // small delay for smoothness
+    }, 100);
     return () => clearTimeout(timer);
   }, []);
 
@@ -29,7 +30,6 @@ export default function MyPortfolio() {
       sections.forEach((sec) => {
         const rect = sec.getBoundingClientRect();
 
-        // calculate visible portion of this section
         const visibleTop = Math.max(rect.top, navbarHeight);
         const visibleBottom = Math.min(rect.bottom, viewportHeight);
         const visibleHeight = Math.max(0, visibleBottom - visibleTop);
@@ -46,7 +46,6 @@ export default function MyPortfolio() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleScroll);
 
-    // run once on mount
     handleScroll();
 
     return () => {
@@ -60,6 +59,7 @@ export default function MyPortfolio() {
     "build scalable applications.",
     "create custom websites.",
     "design UI and prototypes.",
+    "develop creative and professional designs for digital platforms.",
   ];
 
   const [currentSentence, setCurrentSentence] = useState("");
@@ -70,33 +70,55 @@ export default function MyPortfolio() {
   useEffect(() => {
     const currentText = sentences[sentenceIndex];
 
-    let typingSpeed = isDeleting ? 50 : 100; // faster when deleting
+    let typingSpeed = isDeleting ? 50 : 100;
 
     const typingTimeout = setTimeout(() => {
       if (!isDeleting) {
-        // Typing forward
         setCurrentSentence(currentText.slice(0, charIndex + 1));
         setCharIndex((prev) => prev + 1);
 
         if (charIndex === currentText.length) {
-          setTimeout(() => setIsDeleting(true), 1500); // pause before deleting
+          setTimeout(() => setIsDeleting(true), 1500);
         }
       } else {
-        // Deleting backward
         setCurrentSentence(currentText.slice(0, charIndex - 1));
         setCharIndex((prev) => prev - 1);
-
         if (charIndex === 0) {
-          // ✅ Immediately switch sentence before typing again
           setIsDeleting(false);
           setSentenceIndex((prev) => (prev + 1) % sentences.length);
-          setCurrentSentence(""); // clear instantly (no flash)
+          setCurrentSentence("");
         }
       }
     }, typingSpeed);
 
     return () => clearTimeout(typingTimeout);
   }, [charIndex, isDeleting, sentenceIndex]);
+
+  const [copiedText, setCopiedText] = useState("");
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        alert("Text copied to clipboard");
+        setCopiedText(text);
+        setTimeout(() => setCopiedText(""), 1500);
+      })
+      .catch((err) => console.error("Failed to copy: ", err));
+  };
+
+  const closeOffcanvas = () => {
+    const offcanvasEl = document.getElementById("offcanvasScrolling");
+    const bsOffcanvas = Offcanvas.getInstance(offcanvasEl);
+
+    if (bsOffcanvas) {
+      bsOffcanvas.hide();
+    }
+  };
+
+  const handleOnSuccess = () => {
+    closeOffcanvas();
+  };
 
   return (
     <>
@@ -105,52 +127,20 @@ export default function MyPortfolio() {
           visible ? "visible" : ""
         }`}
       >
-        <div className="container-fluid">
+        <div className="container-fluid container-xxl">
           <a
             href="#!"
             className="text-decoration-none text-dark d-block d-xl-none "
             type="button"
             data-bs-toggle="offcanvas"
-            data-bs-target="#offcanvasWithBothOptions"
-            aria-controls="offcanvasWithBothOptions"
+            data-bs-target="#offcanvasScrolling"
+            aria-controls="offcanvasScrolling"
           >
             <i className="fa-solid fa-bars fa-xl"></i>
           </a>
           <span className="display-5 fw-bold">Angelo Validad</span>
-
-          <div className="d-none d-xl-flex gap-5" id="header_menu">
-            <a
-              href="#home"
-              className={`text-decoration-none fs-5 ${
-                activeSection === "home" ? "active" : ""
-              }`}
-            >
-              <i className="fa-solid fa-house-chimney"></i> Home
-            </a>
-            <a
-              href="#about"
-              className={`text-decoration-none fs-5 ${
-                activeSection === "about" ? "active" : ""
-              }`}
-            >
-              <i className="fa-solid fa-circle-question"></i> About me
-            </a>
-            <a
-              href="#projects"
-              className={`text-decoration-none fs-5 ${
-                activeSection === "projects" ? "active" : ""
-              }`}
-            >
-              <i className="fa-solid fa-code"></i> Projects
-            </a>
-            <a
-              href="#contact"
-              className={`text-decoration-none fs-5 ${
-                activeSection === "contact" ? "active" : ""
-              }`}
-            >
-              <i className="fa-solid fa-mobile-screen"></i> Contact
-            </a>
+          <div className="d-none d-xl-block">
+            <MainMenu activeSection={activeSection} />
           </div>
 
           <a
@@ -168,7 +158,6 @@ export default function MyPortfolio() {
         style={{ paddingTop: "100px" }}
       >
         <div className="row align-items-center px-2 px-md-3 px-xxl-5">
-          {/* LEFT SIDE */}
           <motion.div
             className="col-sm-12 col-md-12 col-lg-6 col-xl-6 mb-3"
             initial={{ x: -100, opacity: 0 }}
@@ -192,7 +181,6 @@ export default function MyPortfolio() {
             </div>
           </motion.div>
 
-          {/* RIGHT SIDE */}
           <motion.div
             className="col-sm-12 col-md-12 col-lg-6 col-xl-6"
             initial={{ x: 100, opacity: 0 }}
@@ -223,285 +211,151 @@ export default function MyPortfolio() {
       </section>
 
       <section id="about" className="container-fluid bg-dark p-4 p-md-5 p-lg-5">
-        {/* Section Title */}
-        <motion.span
-          className="display-3 fw-bold text-white"
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-        >
-          Who am I?
-        </motion.span>
+        <div className="container-fluid container-xxl">
+          <motion.span
+            className="display-3 fw-bold text-white"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            Who am I?
+          </motion.span>
 
-        {/* Education */}
-        <motion.div
-          className="d-grid gap-2 mt-5 py-5"
-          initial={{ opacity: 0, y: 60 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-        >
-          <span className="fs-3 text-white mb-3">Education</span>
-          <div className="d-grid d-lg-flex gap-5 w-100 align-items-start">
-            <motion.div
-              className="d-grid gap-1 w-100"
-              initial={{ opacity: 0, x: -80 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.7 }}
-              viewport={{ once: true }}
-            >
-              <span className="text-white fs-6">
-                <i className="fa-solid fa-graduation-cap"></i> College (Carlos
-                Hilado Memorial State University)
-              </span>
-              <span className="fs-3 text-white">
-                Bachelor of Science in Information Systems
-              </span>
-            </motion.div>
-            <motion.div
-              className="d-grid gap-1 w-100"
-              initial={{ opacity: 0, x: 80 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.7 }}
-              viewport={{ once: true }}
-            >
-              <span className="text-white fs-6">
-                <i className="fa-solid fa-graduation-cap"></i> Senior High
-                School (STI West Negros University)
-              </span>
-              <span className="fs-3 text-white">
-                Information Technology Mobile App and Web Development
-              </span>
-            </motion.div>
-          </div>
-        </motion.div>
-
-        {/* Programming Skills */}
-        <motion.div
-          className="d-grid gap-2 mt-5 py-5"
-          initial={{ opacity: 0, y: 70 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          viewport={{ once: true }}
-        >
-          <span className="fs-3 text-white mb-4">Programming Skills</span>
-          <div className="row g-4 w-100 align-items-center justify-content-center mx-auto">
-            {[
-              "Website Development",
-              "Desktop Software Development",
-              "Mobile App Development",
-              "Web Based System",
-              "Database Developer",
-              "Full-stack Developer",
-              "UI/UX Designer",
-              "Figma Prototype Designer",
-            ].map((skill, index) => (
+          <motion.div
+            className="d-grid gap-2 mt-5 py-5"
+            initial={{ opacity: 0, y: 60 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <span className="fs-3 text-white mb-3">Education</span>
+            <div className="d-grid d-lg-flex gap-5 w-100 align-items-start">
               <motion.div
-                key={index}
-                className="col-sm-12 col-md-6 col-lg-4"
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="d-grid gap-1 w-100"
+                initial={{ opacity: 0, x: -80 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7 }}
                 viewport={{ once: true }}
               >
-                <div className="border border-light shadow-lg bg-light p-2 px-3 rounded-pill fw-bold text-center">
-                  {skill}
-                </div>
+                <span className="text-white fs-6">
+                  <i className="fa-solid fa-graduation-cap"></i> College (Carlos
+                  Hilado Memorial State University)
+                </span>
+                <span className="fs-3 text-white">
+                  Bachelor of Science in Information Systems
+                </span>
               </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Frameworks and Languages */}
-        <motion.div
-          className="d-grid gap-2 mt-5 py-5"
-          initial={{ opacity: 0, y: 80 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          viewport={{ once: true }}
-        >
-          <span className="fs-3 text-white mb-4">Frameworks and Languages</span>
-          <div className="row g-5 align-items-center justify-content-center text-center">
-            {[
-              { src: "./assets/logos/dot_net.png", label: ".Net Framework" },
-              { src: "./assets/logos/React.svg", label: "React Js" },
-              { src: "./assets/logos/Flutter.png", label: "Flutter" },
-              {
-                src: "./assets/logos/Net_Core.svg",
-                label: "ASP.NET Core Web API",
-              },
-              { src: "./assets/logos/HTML5.png", label: "HTML 5" },
-              { src: "./assets/logos/CSS3.png", label: "CSS 3" },
-              { src: "./assets/logos/JavaScript.png", label: "JavaScript" },
-              { src: "./assets/logos/jquery.png", label: "JQuery" },
-              { src: "./assets/logos/php.png", label: "PHP" },
-              { src: "./assets/logos/dart.png", label: "Dart" },
-              { src: "./assets/logos/c_sharp.png", label: "C#" },
-              { src: "./assets/logos/Bootstrap.png", label: "Bootstrap 5" },
-              { src: "./assets/logos/mysql.png", label: "MySQL" },
-              { src: "./assets/logos/mssql.svg", label: "MS SQL" },
-              { src: "./assets/logos/figma.svg", label: "Figma" },
-            ].map((item, index) => (
               <motion.div
-                key={index}
-                className="col-sm-12 col-md-3 col-lg-2"
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="d-grid gap-1 w-100"
+                initial={{ opacity: 0, x: 80 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7 }}
                 viewport={{ once: true }}
               >
-                <div className="d-grid">
-                  <img
-                    src={item.src}
-                    alt={item.label}
-                    height={80}
-                    className="rounded p-1 mx-auto"
-                  />
-                  <span className="text-light">{item.label}</span>
-                </div>
+                <span className="text-white fs-6">
+                  <i className="fa-solid fa-graduation-cap"></i> Senior High
+                  School (STI West Negros University)
+                </span>
+                <span className="fs-3 text-white">
+                  Information Technology Mobile App and Web Development
+                </span>
               </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Services */}
-        <motion.div
-          className="d-grid gap-2 mt-5 py-5"
-          initial={{ opacity: 0, y: 70 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-        >
-          <span className="fs-3 text-white mb-4">Services</span>
-          <div className="row g-4 w-100 align-items-center justify-content-center mx-auto">
-            {[
-              "Software Development",
-              "Customized Website",
-              "Graphics Design",
-            ].map((service, index) => (
-              <motion.div
-                key={index}
-                className="col-sm-12 col-md-6 col-lg-4"
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <div className="border border-light shadow-lg bg-light p-2 px-3 rounded-pill fw-bold text-center">
-                  {service}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      </section>
-      {/* <section
-        id="projects"
-        className="container-fluid bg-white p-3 p-md-5 p-lg-5"
-      >
-        <span className="display-3 fw-bold text-dark ">Projects</span>
-        <div className="d-grid justify-content-center gap-2 my-5">
-          <span className="fs-3 fw-bold text-dark mb-2 mb-md-3 mb-lg-3">
-            Featured Projects
-          </span>
-
-          
-
-          
-
-          
-
-          <div className="d-grid gap-2 shadow-sm p-3 p-lg-5 rounded mb-4 bg-dark text-light">
-            <span className="display-6">
-              Resort Amenities/Facilities Management System
-            </span>
-
-            <div
-              id="resortCarousel"
-              className="carousel slide my-2 mx-auto"
-              data-bs-ride="carousel"
-              style={{ maxWidth: "650px" }}
-            >
-              <div className="carousel-inner">
-                <div className="carousel-item active">
-                  <img
-                    src="./assets/projects/9.png"
-                    className="d-block w-100 img-rounded"
-                    alt="Resort System Screenshot 1"
-                  />
-                </div>
-                <div className="carousel-item">
-                  <img
-                    src="./assets/projects/8.png"
-                    className="d-block w-100 img-rounded"
-                    alt="Resort System Screenshot 2"
-                  />
-                </div>
-              </div>
-
-              <button
-                className="carousel-control-prev"
-                type="button"
-                data-bs-target="#resortCarousel"
-                data-bs-slide="prev"
-              >
-                <span
-                  className="carousel-control-prev-icon"
-                  aria-hidden="true"
-                ></span>
-                <span className="visually-hidden">Previous</span>
-              </button>
-              <button
-                className="carousel-control-next"
-                type="button"
-                data-bs-target="#resortCarousel"
-                data-bs-slide="next"
-              >
-                <span
-                  className="carousel-control-next-icon"
-                  aria-hidden="true"
-                ></span>
-                <span className="visually-hidden">Next</span>
-              </button>
             </div>
+          </motion.div>
 
-            <span className="my-3 fs-6">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Deleniti,
-              obcaecati modi ab dolorum at ipsum aut. Officiis expedita nesciunt
-              deserunt dolore voluptate veritatis eos obcaecati eveniet animi,
-              fuga provident, voluptatem quisquam vero? Dolorem culpa ut
-              corrupti asperiores laudantium. Et ad, omnis illum corrupti
-              similique mollitia quis ex ea excepturi laborum!
-            </span>
-
-            <span className="fs-5 fw-bold mb-1">Features:</span>
-            <div className="d-grid d-md-flex d-lg-flex gap-3 align-items-end justify-content-between fs-6">
-              <div className="d-grid gap-2 w-100">
-                <span>
-                  <i className="fa-solid fa-circle-check text-primary"></i> QR
-                  Code Generator (Printable)
-                </span>
-                <span>
-                  <i className="fa-solid fa-circle-check text-primary"></i>{" "}
-                  Online Ratings (via Website)
-                </span>
-                <span>
-                  <i className="fa-solid fa-circle-check text-primary"></i>{" "}
-                  Online Website
-                </span>
-              </div>
-              <button className="btn btn-sm btn-outline-light w-50">
-                View <i className="fa-solid fa-arrow-right"></i>
-              </button>
+          <motion.div
+            className="d-grid gap-2 mt-5 py-5"
+            initial={{ opacity: 0, y: 70 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            viewport={{ once: true }}
+          >
+            <span className="fs-3 text-white mb-4">Technical Skills</span>
+            <div className="row g-4 w-100 align-items-center justify-content-center mx-auto">
+              {[
+                "Web Development",
+                "Desktop Application Development",
+                "Mobile Application Development",
+                "Web-Based Systems",
+                "Database Design & Development",
+                "Full-Stack Development",
+                "UI/UX Design",
+                "Figma Prototyping",
+                "Graphics Design",
+              ].map((skill, index) => (
+                <motion.div
+                  key={index}
+                  className="col-sm-12 col-md-6 col-lg-4"
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <div className="border border-light shadow-lg bg-light p-2 px-3 rounded-pill fw-bold text-center">
+                    {skill}
+                  </div>
+                </motion.div>
+              ))}
             </div>
-          </div>
+          </motion.div>
+
+          <motion.div
+            className="d-grid gap-2 mt-5 py-5"
+            initial={{ opacity: 0, y: 80 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            viewport={{ once: true }}
+          >
+            <span className="fs-3 text-white mb-4">Tech Stack</span>
+            <div className="row g-5 align-items-center justify-content-center text-center">
+              {[
+                { src: "./assets/logos/dot_net.png", label: ".Net Framework" },
+                { src: "./assets/logos/React.svg", label: "React Js" },
+                { src: "./assets/logos/Flutter.png", label: "Flutter" },
+                {
+                  src: "./assets/logos/dot_core.png",
+                  label: "ASP.NET Core Web API",
+                },
+                { src: "./assets/logos/HTML5.png", label: "HTML 5" },
+                { src: "./assets/logos/CSS3.png", label: "CSS 3" },
+                { src: "./assets/logos/JavaScript.png", label: "JavaScript" },
+                { src: "./assets/logos/jquery.png", label: "JQuery" },
+                { src: "./assets/logos/php.png", label: "PHP" },
+                { src: "./assets/logos/dart.png", label: "Dart" },
+                { src: "./assets/logos/c_sharp.png", label: "C#" },
+                { src: "./assets/logos/Bootstrap.png", label: "Bootstrap 5" },
+                { src: "./assets/logos/mysql.png", label: "MySQL" },
+                { src: "./assets/logos/mssql.svg", label: "MS SQL" },
+                { src: "./assets/logos/figma.svg", label: "Figma" },
+              ].map((item, index) => (
+                <motion.div
+                  key={index}
+                  className="col-sm-12 col-md-3 col-lg-2"
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <div className="d-grid">
+                    <img
+                      src={item.src}
+                      alt={item.label}
+                      height={80}
+                      className="rounded p-1 mx-auto"
+                    />
+                    <span className="text-light">{item.label}</span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
         </div>
-      </section> */}
+      </section>
 
       <section
         id="projects"
-        className="container-fluid bg-white p-3 p-md-5 p-lg-5"
+        className="container-fluid container-xxl bg-white p-3 p-md-5 p-lg-5"
       >
         <motion.span
           className="display-3 fw-bold text-dark "
@@ -523,7 +377,6 @@ export default function MyPortfolio() {
           >
             Featured Projects
           </motion.span>
-          {/* Restaurant Management System */}
           <motion.div
             className="d-grid gap-2 shadow-sm p-3 p-lg-5 rounded mb-4 bg-dark text-light"
             initial={{ opacity: 0, scale: 0.9, y: 50 }}
@@ -587,12 +440,11 @@ export default function MyPortfolio() {
               </button>
             </div>
             <span className="my-3 fs-6">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Deleniti,
-              obcaecati modi ab dolorum at ipsum aut. Officiis expedita nesciunt
-              deserunt dolore voluptate veritatis eos obcaecati eveniet animi,
-              fuga provident, voluptatem quisquam vero? Dolorem culpa ut
-              corrupti asperiores laudantium. Et ad, omnis illum corrupti
-              similique mollitia quis ex ea excepturi laborum!
+              The Restaurant Management System is a complete solution designed
+              to streamline operations and boost efficiency. It uses real-time
+              insights and data-driven tools to enhance performance and elevate
+              the customer experience, while comprehensive reporting and
+              analytics ensure well-organized and informed management.
             </span>
             <span className="fs-5 fw-bold mb-1">Features:</span>
             <div className="d-grid d-md-flex d-lg-flex gap-3 align-items-end justify-content-between fs-6">
@@ -628,7 +480,6 @@ export default function MyPortfolio() {
               </button>
             </div>
           </motion.div>
-          {/* CrimeX */}
           <motion.div
             className="d-grid gap-2 shadow-sm p-3 p-lg-5 rounded mb-4 bg-dark text-light"
             initial={{ opacity: 0, scale: 0.9, y: 50 }}
@@ -687,10 +538,12 @@ export default function MyPortfolio() {
               </button>
             </div>
             <span className="my-3 fs-6">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Deleniti,
-              obcaecati modi ab dolorum at ipsum aut. Officiis expedita nesciunt
-              deserunt dolore voluptate veritatis eos obcaecati eveniet animi,
-              fuga provident, voluptatem quisquam vero?
+              CrimeX 2D Crime Scene Investigation Simulator is an interactive 2D
+              simulation game that allows criminology students to practice and
+              refine their investigative skills in a realistic virtual
+              environment. It offers a comprehensive learning experience,
+              enabling students to track their performance and gain practical
+              insights into crime scene investigation.
             </span>
             <span className="fs-5 fw-bold mb-1">Features:</span>
             <div className="d-grid d-md-flex d-lg-flex gap-3 align-items-end justify-content-between fs-6">
@@ -717,7 +570,6 @@ export default function MyPortfolio() {
               </button>
             </div>
           </motion.div>
-          {/* Agency Portal */}
           <motion.div
             className="d-grid gap-2 shadow-sm p-3 p-lg-5 rounded mb-4 bg-dark text-light"
             initial={{ opacity: 0, scale: 0.9, y: 50 }}
@@ -743,7 +595,11 @@ export default function MyPortfolio() {
               </div>
             </div>
             <span className="my-3 fs-6">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit...
+              The Agency/Department Online Portal is a digital platform that
+              streamlines the submission, management, and monitoring of
+              violation records. It ensures transparent and efficient
+              communication between the agency and violators while supporting
+              organized and data-driven operations.
             </span>
             <span className="fs-5 fw-bold mb-1">Features:</span>
             <div className="d-grid d-md-flex d-lg-flex gap-3 align-items-end justify-content-between fs-6">
@@ -774,7 +630,6 @@ export default function MyPortfolio() {
               </button>
             </div>
           </motion.div>
-          {/* ---------------- RESTAURANT/COFFEE SHOP POS SYSTEM ---------------- */}
           <motion.div
             className="d-grid gap-2 shadow-sm p-3 p-lg-5 rounded mb-4 bg-dark text-light"
             initial={{ opacity: 0, scale: 0.9, y: 50 }}
@@ -834,12 +689,10 @@ export default function MyPortfolio() {
             </div>
 
             <span className="my-3 fs-6">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Deleniti,
-              obcaecati modi ab dolorum at ipsum aut. Officiis expedita nesciunt
-              deserunt dolore voluptate veritatis eos obcaecati eveniet animi,
-              fuga provident, voluptatem quisquam vero? Dolorem culpa ut
-              corrupti asperiores laudantium. Et ad, omnis illum corrupti
-              similique mollitia quis ex ea excepturi laborum!
+              The Restaurant/Coffee Shop POS System is a modern solution
+              designed to optimize operations and enhance the overall customer
+              experience. It ensures efficient service flow, timely order
+              management, and a seamless interaction between staff and patrons.
             </span>
 
             <span className="fs-5 fw-bold mb-1">Features:</span>
@@ -863,7 +716,6 @@ export default function MyPortfolio() {
               </button>
             </div>
           </motion.div>
-          {/* ---------------- AIRPORT MANAGEMENT SYSTEM (PROTOTYPE) ---------------- */}
           <motion.div
             className="d-grid gap-2 shadow-sm p-3 p-lg-5 rounded mb-4 bg-dark text-light"
             initial={{ opacity: 0, scale: 0.9, y: 50 }}
@@ -925,12 +777,10 @@ export default function MyPortfolio() {
             </div>
 
             <span className="my-3 fs-6">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Deleniti,
-              obcaecati modi ab dolorum at ipsum aut. Officiis expedita nesciunt
-              deserunt dolore voluptate veritatis eos obcaecati eveniet animi,
-              fuga provident, voluptatem quisquam vero? Dolorem culpa ut
-              corrupti asperiores laudantium. Et ad, omnis illum corrupti
-              similique mollitia quis ex ea excepturi laborum!
+              The Airport Management System prototype is a conceptual design
+              showcasing a modern and user-friendly interface. It highlights
+              features like online ticket booking, retail services, and website
+              interactions, serving purely as a design demonstration.
             </span>
 
             <span className="fs-5 fw-bold mb-1">Features:</span>
@@ -957,10 +807,10 @@ export default function MyPortfolio() {
 
           <motion.div
             className="d-grid gap-2 shadow-sm p-3 p-lg-5 rounded mb-4 bg-dark text-light"
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
+            initial={{ opacity: 0, scale: 0.9, y: 50 }}
+            whileInView={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
           >
             <span className="display-6">
               Resort Amenities/Facilities Management System
@@ -1016,12 +866,11 @@ export default function MyPortfolio() {
             </div>
 
             <span className="my-3 fs-6">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Deleniti,
-              obcaecati modi ab dolorum at ipsum aut. Officiis expedita nesciunt
-              deserunt dolore voluptate veritatis eos obcaecati eveniet animi,
-              fuga provident, voluptatem quisquam vero? Dolorem culpa ut
-              corrupti asperiores laudantium. Et ad, omnis illum corrupti
-              similique mollitia quis ex ea excepturi laborum!
+              The Resort Amenities/Facilities Management System is a digital
+              platform designed to monitor and track the condition and ratings
+              of resort facilities. It serves as a centralized tool to ensure
+              organized oversight and maintain high standards of service and
+              quality.
             </span>
 
             <span className="fs-5 fw-bold mb-1">Features:</span>
@@ -1045,118 +894,157 @@ export default function MyPortfolio() {
               </button>
             </div>
           </motion.div>
-          {/* Continue wrapping the rest (POS System, Airport, Resort) the same way */}
         </div>
       </section>
 
       <motion.section
         id="contact"
         className="container-fluid bg-dark p-4 p-md-5"
-        initial={{ opacity: 0, y: 50 }} // start hidden and slightly down
-        whileInView={{ opacity: 1, y: 0 }} // animate to visible
-        viewport={{ once: true, amount: 0.3 }} // trigger when 30% visible
-        transition={{ duration: 0.8, ease: "easeOut" }} // smooth transition
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
       >
-        <span className="display-3 fw-bold text-white">Contact</span>
-        <div className="row justify-content-center align-items-stretch mt-5">
-          <motion.div
-            className="col-sm-12 col-md-12 col-lg-6 mb-5"
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-          >
-            <div className="d-grid gap-5 p-2 p-md-0 p-xl-0">
-              <div className="d-grid d-lg-flex gap-3">
-                <img
-                  className="border rounded-circle border-light shadow mx-md-0 mx-lg-0"
-                  height={100}
-                  src="/assets/profile.png"
-                  alt="logo"
-                />
-                <div className="d-grid justify-content-start">
-                  <span className="fs-3 fw-bold text-light">
-                    Angelo F. Validad
-                  </span>
-                  <span className="fs-6 fw-bold text-light">
-                    Bacolod City, Negros Occidental, Philippines 6100
-                  </span>
-                  <span className="fs-6 fw-bold text-light">Male</span>
+        <div className="container-fluid container-xxl">
+          <span className="display-3 fw-bold text-white">Contact</span>
+          <div className="row justify-content-center align-items-stretch mt-5">
+            <motion.div
+              className="col-sm-12 col-md-12 col-lg-6 mb-5"
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              <div className="d-grid gap-5 p-2 p-md-0 p-xl-0">
+                <div className="d-grid d-lg-flex gap-3">
+                  <img
+                    className="border rounded-circle border-light shadow mx-md-0 mx-lg-0"
+                    height={100}
+                    src="/assets/profile.png"
+                    alt="logo"
+                  />
+                  <div className="d-grid justify-content-start">
+                    <span className="fs-3 fw-bold text-light">
+                      Angelo F. Validad
+                    </span>
+                    <span className="fs-6 fw-bold text-light">
+                      Bacolod City, Negros Occidental, Philippines 6100
+                    </span>
+                    <span className="fs-6 fw-bold text-light">Male</span>
+                  </div>
+                </div>
+                <div className="d-grid gap-4 text-light fs-5">
+                  <a
+                    target="_blank"
+                    rel="noreferrer"
+                    href="https://www.facebook.com/profile.php?id=100089856474446"
+                    className="text-decoration-none text-light small text-ellipsis"
+                  >
+                    <i className="fa-brands fa-facebook"></i> ArtbyGelay
+                    Official (Graphics Design)
+                  </a>
+                  <a
+                    target="_blank"
+                    rel="noreferrer"
+                    href="https://www.facebook.com/profile.php?id=61559171996876"
+                    className="text-decoration-none text-light small text-ellipsis"
+                  >
+                    <i className="fa-brands fa-facebook-messenger"></i> ConCat
+                    Softwares (Software Development)
+                  </a>
+                  <a
+                    target="_blank"
+                    rel="noreferrer"
+                    href="https://www.upwork.com/freelancers/~016b497ca9a3c39794?mp_source=share"
+                    className="text-decoration-none text-light small text-ellipsis"
+                  >
+                    <i className="fa-brands fa-square-upwork"></i> Angelo
+                    Validad
+                  </a>
+                  <a
+                    target="_blank"
+                    rel="noreferrer"
+                    href="https://github.com/CodePai09"
+                    className="text-decoration-none text-light small text-ellipsis"
+                  >
+                    <i className="fa-brands fa-square-github"></i> CodePai09
+                  </a>
+                  <a
+                    href="#!"
+                    className="text-decoration-none text-light position-relative small text-ellipsis"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      copyToClipboard("validad.angelo.f01@gmail.com");
+                    }}
+                  >
+                    <i className="fa-solid fa-at"></i>{" "}
+                    validad.angelo.f01@gmail.com{" "}
+                    <i className="fa-solid fa-copy"></i>
+                    {copiedText === "validad.angelo.f01@gmail.com" && (
+                      <span className="ms-2 text-success">Copied!</span>
+                    )}
+                  </a>
+
+                  <a
+                    href="#!"
+                    className="text-decoration-none text-light position-relative small text-ellipsis"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      copyToClipboard("+639929053534");
+                    }}
+                  >
+                    <i className="fa-solid fa-mobile-screen-button"></i> +63 992
+                    905 3534 <i className="fa-solid fa-copy"></i>
+                    {copiedText === "+639929053534" && (
+                      <span className="ms-2 text-success">Copied!</span>
+                    )}
+                  </a>
                 </div>
               </div>
-              <div className="d-grid gap-4 text-light fs-5">
-                <a href="#!" className="text-decoration-none text-light">
-                  <i className="fa-brands fa-facebook"></i> ArtByGelay Official
-                  (Graphics Design)
-                </a>
-                <a href="#!" className="text-decoration-none text-light">
-                  <i className="fa-brands fa-facebook-messenger"></i> ConCat
-                  Softwares (Software Development)
-                </a>
-                <a href="#!" className="text-decoration-none text-light">
-                  <i className="fa-solid fa-at"></i>{" "}
-                  validad.angelo.f01@gmail.com
-                </a>
+            </motion.div>
+
+            <motion.div
+              className="col-sm-12 col-md-12 col-lg-6 text-center"
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              <div className="d-grid h-100 gap-5 align-items-center">
+                <span className="text-light display-3">
+                  "Master your skills, and success will follow"
+                </span>
+
                 <a
-                  target="_blank"
-                  rel="noreferrer"
-                  href="https://www.upwork.com/freelancers/~016b497ca9a3c39794?mp_source=share"
-                  className="text-decoration-none text-light"
+                  href="#home"
+                  className="btn btn-sm btn-outline-light mt-auto w-50 ms-auto"
                 >
-                  <i className="fa-brands fa-square-upwork"></i> Angelo Validad
-                </a>
-                <a href="#!" className="text-decoration-none text-light">
-                  <i className="fa-solid fa-mobile-screen-button"></i> +63 992
-                  905 3534
-                </a>
-                <a
-                  target="_blank"
-                  rel="noreferrer"
-                  href="https://github.com/CodePai09"
-                  className="text-decoration-none text-light"
-                >
-                  <i className="fa-brands fa-square-github"></i> CodePai09
+                  Back to Top
                 </a>
               </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            className="col-sm-12 col-md-12 col-lg-6 text-center"
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-          >
-            <div className="d-grid h-100 gap-5 align-items-center">
-              <span className="text-light display-3">
-                "Master your skills, and success will follow"
-              </span>
-
-              <a
-                href="#home"
-                className="btn btn-sm btn-outline-light mt-auto w-50 ms-auto"
-              >
-                Back to Top
-              </a>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       </motion.section>
-      <div className="container-fluid bg-light p-3 text-center fw-bold">
+      <div className="container-fluid container-xxl bg-light p-3 text-center fw-bold">
         © 2025 Angelo Validad. All Rights Reserved.
       </div>
+
       <div
-        className="offcanvas offcanvas-start w-25"
+        className="offcanvas offcanvas-start"
+        class="offcanvas offcanvas-start"
         data-bs-scroll="true"
         data-bs-backdrop="false"
-        tabIndex="-1"
+        tabindex="-1"
         id="offcanvasScrolling"
         aria-labelledby="offcanvasScrollingLabel"
       >
         <div className="offcanvas-header">
-          <h5 className="offcanvas-title" id="offcanvasScrollingLabel">
-            Colored with scrolling
+          <h5
+            className="offcanvas-title text-light text-dark"
+            id="offcanvasWithBothOptionsLabel"
+          >
+            Menu
           </h5>
           <button
             type="button"
@@ -1166,54 +1054,7 @@ export default function MyPortfolio() {
           ></button>
         </div>
         <div className="offcanvas-body">
-          <p>
-            Try scrolling the rest of the page to see this option in action.
-          </p>
-        </div>
-      </div>
-      <div
-        className="offcanvas offcanvas-start"
-        tabIndex="-1"
-        id="offcanvasWithBackdrop"
-        aria-labelledby="offcanvasWithBackdropLabel"
-      >
-        <div className="offcanvas-header">
-          <h5 className="offcanvas-title" id="offcanvasWithBackdropLabel">
-            Offcanvas with backdrop
-          </h5>
-          <button
-            type="button"
-            className="btn-close text-reset"
-            data-bs-dismiss="offcanvas"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div className="offcanvas-body">
-          <p>.....</p>
-        </div>
-      </div>
-      <div
-        className="offcanvas offcanvas-start"
-        data-bs-scroll="true"
-        tabIndex="-1"
-        id="offcanvasWithBothOptions"
-        aria-labelledby="offcanvasWithBothOptionsLabel"
-      >
-        <div className="offcanvas-header">
-          <h5 className="offcanvas-title" id="offcanvasWithBothOptionsLabel">
-            Backdroped with scrolling
-          </h5>
-          <button
-            type="button"
-            className="btn-close text-reset"
-            data-bs-dismiss="offcanvas"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div className="offcanvas-body">
-          <p>
-            Try scrolling the rest of the page to see this option in action.
-          </p>
+          <MainMenu activeSection={activeSection} onSuccess={handleOnSuccess} />
         </div>
       </div>
     </>
